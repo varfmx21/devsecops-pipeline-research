@@ -1,0 +1,6 @@
+Repositorio	Lenguaje / Stack	Qué incluye para SAST / DAST / SCA	Ventaja principal para evaluar LLM Remediation
+pandelig/sast-sca-dast-demo	Python (Flask)	App Flask básica + requirements.txt con CVEs + endpoints HTTP para ZAP.	La más rápida de montar si solo quieres probar que tu flujo YAML conecta bien las herramientas con el LLM.
+plexicus/simplest-sast-vulnerable	Python (Flask) + HTML + Dockerfile + Terraform	10 vulnerabilidades exactas (SQLi, Command Injection, Path Traversal, XSS, Hardcoded Secrets, Pickle, MD5) + requirements.txt.	Cada línea vulnerable está marcada con # VULNERABILITY: [type] (ground truth listo para automatizar métricas). Además, el propio repo fue usado para probar bots de remediación con IA.
+AntonyNRM/vulnerable-flask-app	Python (Flask) + boto3	6 endpoints aislados (/login, /query, /ping, /upload, /deserialize, /allocate) con payloads de prueba documentados en el README.	Incluye el archivo app_remediated.py escrito por un humano. Puedes comparar el diff generado por tu LLM contra la remediación humana de referencia.
+vulnerable-apps/vulnerable-node-app o appsecco/dvna	Node.js + Express + MySQL	~10 vulnerabilidades clásicas del OWASP Top 10 con dependencias npm vulnerables.	Mejor opción si prefieres evaluar cómo el LLM parcha ecosistemas JavaScript (package.json + código asíncrono) en lugar de Python.
+
