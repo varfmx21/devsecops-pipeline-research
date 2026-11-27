@@ -41,8 +41,8 @@ jobs:
                 name: semgrep-sast-sarif
                 path: semgrep.sarif
                 retention-days: 90
-    dast:
-        name: DAST (SBOM + Grype)
+    SCA:
+        name: SCA (SBOM + Grype)
         runs-on: ubuntu-latest
 
         steps:
@@ -62,7 +62,6 @@ jobs:
                 upload-artifact-retention: 90 
             
             - name: Scan SBOM with Grype
-              id: grype-scan
               uses: anchore/scan-action@v7
               with:
                 sbom: sbom-syft.cdx.json
@@ -70,12 +69,13 @@ jobs:
                 only-fixed: true
                 cache-db: true
             
-            - name: Upload Grype SARIF report
-              uses: github/codeql-action/upload-sarif@v4
+            - name: Upload Grype SARIF report Artifacts
+              uses: actions/upload-artifact@v7
               if: always()
               with:
-                sarif_file: ${{ steps.grype-scan.outputs.sarif }}
-                category: grype-sca
+                name: grype-sca-report
+                path: grype.sarif
+                retention-days: 90
     
     dynamic-scan:
         name: DAST (OWASP ZAP)
