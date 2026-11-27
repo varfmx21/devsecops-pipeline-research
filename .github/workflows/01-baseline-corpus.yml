@@ -57,7 +57,7 @@ jobs:
               with:
                 image: mi-app:${{ github.sha }}
                 format: cyclonedx-json
-                output-file: sbom-image.cdx.json
+                output-file: sbom-syft.cdx.json
                 upload-artifact: true
                 upload-artifact-retention: 90 
             
