@@ -65,13 +65,13 @@ jobs:
               id: grype-scan
               uses: anchore/scan-action@v7
               with:
-                sbom: corpus/sbom-syft.cdx.json
+                sbom: sbom-syft.cdx.json
                 severity-cutoff: high
                 only-fixed: true
                 cache-db: true
             
             - name: Upload Grype SARIF report
-              uses: github/codeql-action/upload-sarif@v3
+              uses: github/codeql-action/upload-sarif@v4
               if: always()
               with:
                 sarif_file: ${{ steps.grype-scan.outputs.sarif }}
