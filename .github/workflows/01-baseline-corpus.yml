@@ -46,8 +46,11 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
             - name: Build Docker image
-              run: docker build -t mi-app:${{ github.sha }} .
+              run: docker build -t mi-app:${{ github.sha }} ./target-app/
             
             - name: Generate Container SBOM
               uses: anchore/sbom-action@v0
