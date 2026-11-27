@@ -30,17 +30,17 @@ jobs:
                 semgrep scan \
                 --config p/default \
                 --config p/owasp-top-ten \
-                --sarif \
-                --output semgrep.sarif \
+                --sarif-output=semgrep.sarif \
                 --severity ERROR \
                 --error
             
-            - name: Upload SARIF to Github Security
-              uses: github/codeql-action/upload-sarif@v4
+            - name: Upload Semgrep SARIF Artifact
+              uses: actions/upload-artifact@v7
               if: always()
               with:
-                sarif_file: semgrep.sarif
-                category: semgrep-sast
+                name: semgrep-sast-sarif
+                path: semgrep.sarif
+                retention-days: 90
     dast:
         name: DAST (SBOM + Grype)
         runs-on: ubuntu-latest
