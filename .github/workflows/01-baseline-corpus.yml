@@ -62,12 +62,15 @@ jobs:
                 upload-artifact-retention: 90 
             
             - name: Scan SBOM with Grype
+              id: grype-scan
               uses: anchore/scan-action@v7
               with:
                 sbom: sbom-syft.cdx.json
                 severity-cutoff: high
                 only-fixed: true
                 cache-db: true
+                output-format: sarif
+                output-file: grype.sarif
             
             - name: Upload Grype SARIF report Artifacts
               uses: actions/upload-artifact@v7
