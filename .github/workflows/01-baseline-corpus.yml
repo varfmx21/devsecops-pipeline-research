@@ -1,0 +1,99 @@
+name: 01 - Baseline Seucutiry Corpus (SemGrep + Syft/Grype + Zap)
+
+on:
+    workflow_dispatch:
+    push:
+        branches: [main]
+        paths:
+            - 'target-app/**'
+            - '.github/workflows/01-baseline-corpus.yml'
+
+permissions:
+    contents: read
+    issues: write
+
+jobs:
+    sast-sca:
+        name: SAST & SCA
+        runs-on: ubuntu-latest
+
+        container:
+            image: semgrep/semgrep
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+        
+            - name: Run SemGrep Scan
+              run: |
+                semgrep scan \
+                --config p/default \
+                --config p/owasp-top-ten \
+                --sarif \
+                --output semgrep.sarif \
+                --severity ERROR \
+                --error
+            
+            - name: Build Docker image
+              run: docker build -t mi-app:${{ github.sha }} .
+            
+            - name: Upload SARIF to Github Security
+              uses: github/codeql-action/upload-sarif@v3
+              if: always()
+              with:
+                sarif_file: semgrep.sarif
+                category: semgrep-sast
+            
+            - name: Generate Container SBOM
+              uses: anchore/sbom-action@v0
+              with:
+                image: mi-app:${{ github.sha }}
+                format: cyclonedx-json
+                output-file: sbom-image.cdx.json
+                upload-artifact: true
+                upload-artifact-retention: 90 
+            
+            - name: Scan SBOM with Grype
+              id: grype-scan
+              uses: anchore/scan-action@v7
+              with:
+                sbom: corpus/sbom-syft.cdx.json
+                severity-cutoff: high
+                only-fixed: true
+                cache-db: true
+            
+            - name: Upload Grype SARIF report
+              uses: github/codeql-action/upload-sarif@v3
+              if: always()
+              with:
+                sarif_file: ${{ steps.grype-scan.outputs.sarif }}
+                category: grype-sca
+    
+    dynamic-scan:
+        name: DAST (OWASP ZAP)
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Build & Start Flask Container
+              run: |
+                docker build -t target-app:dast ./target-app
+                docker run -d --name flask-app -p 5000:5000 target-app:dast
+                timeout 20 bash -c 'until curl -s http://localhost:5000 > /dev/null; do sleep 1; done'
+            
+            - name: ZAP Full Scan
+              uses: zaproxy/action-full-scan@v0.13.0
+              with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+                docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
+                target: 'http://localhost:5000'
+                cmd_options: '-j'
+                allow_issue_writing: true
+                artifact_name: 'zap-full-scan-report'
+                fail_action: true
+
+            - name: Cleanup Container
+              if: always()
+              run: docker rm -f flask-app || true
