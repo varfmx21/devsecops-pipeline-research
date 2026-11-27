@@ -1,5 +1,5 @@
 # VULNERABILITY: Using latest tag
-FROM python:latest
+FROM python:3.9-slim
 
 # VULNERABILITY: Running as root
 USER root
