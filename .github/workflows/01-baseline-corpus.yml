@@ -14,8 +14,8 @@ permissions:
     security-events: write
 
 jobs:
-    sast-sca:
-        name: SAST & SCA
+    sast:
+        name: SAST (SemGrep)
         runs-on: ubuntu-latest
 
         container:
@@ -41,7 +41,11 @@ jobs:
               with:
                 sarif_file: semgrep.sarif
                 category: semgrep-sast
+    dast:
+        name: DAST (SBOM + Grype)
+        runs-on: ubuntu-latest
 
+        steps:
             - name: Build Docker image
               run: docker build -t mi-app:${{ github.sha }} .
             
